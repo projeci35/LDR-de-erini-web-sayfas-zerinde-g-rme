@@ -1,0 +1,7 @@
+LDR pin=ESP8266 A0
+Kodda verilen üst tarafta ssid yazan kısıma ağ adı password yazan kısıma şifrenizi girin
+girdikten sonra arduinoda seri monitörü açın 
+hızı 115200 baud rateye alın
+ESP8266 reset butonuna basın internete bağlanınca seri monitöre size bir ip verilecektir
+ip kopyalayıp tarayıcınızda açın 
+ESP8266 ile aynı ağa bağlı olmanız gerekmektedir.
