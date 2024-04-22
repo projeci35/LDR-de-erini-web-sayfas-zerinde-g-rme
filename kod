@@ -1,0 +1,96 @@
+
+#include <ESP8266WiFi.h>
+
+// SSID Ağ adı
+// password parola
+const char* ssid     = "xx";
+const char* password = "xx";
+
+
+WiFiServer server(80);
+
+
+String header;
+
+
+const int ldrPin = A0;
+
+
+unsigned long currentTime = millis();
+
+unsigned long previousTime = 0; 
+
+const long timeoutTime = 2000;
+
+void setup() {
+  Serial.begin(115200);
+ 
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  server.begin();
+}
+
+void loop(){
+  WiFiClient client = server.available(); 
+  if (client) {                            
+    Serial.println("New Client.");         
+    String currentLine = "";               
+    currentTime = millis();
+    previousTime = currentTime;
+    while (client.connected() && currentTime - previousTime <= timeoutTime) { // loop while the client's connected
+      currentTime = millis();         
+      if (client.available()) {             
+        char c = client.read();           
+        Serial.write(c);                   
+        header += c;
+        if (c == '\n') {                    
+          
+          if (currentLine.length() == 0) {
+            
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/html");
+            client.println("Connection: close");
+            client.println();
+           
+            int ldrValue = analogRead(ldrPin);
+
+            
+            client.println("<!DOCTYPE html><html>");
+            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            client.println("<link rel=\"icon\" href=\"data:,\">");
+            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
+            client.println(".ldr-value { font-size: 30px; }</style></head>");
+            client.println("<body><h1>LDR Degeri</h1>");
+            client.println("<p class=\"ldr-value\">"+ String(ldrValue) + "</p>");
+            client.println("</body></html>");
+            
+          
+            client.println();
+           
+            break;
+          } else { 
+            currentLine = "";
+          }
+        } else if (c != '\r') {  
+          currentLine += c;    
+        }
+      }
+    }
+   
+    header = "";
+  
+    client.stop();
+    Serial.println("Client disconnected.");
+    Serial.println("");
+  }
+}
